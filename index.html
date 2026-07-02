@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1b5e20">
+  <title>מועדון הכדורגל ⚽</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="מועדון הכדורגל">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./js/lib/three.module.min.js",
+      "three/addons/": "./js/lib/addons/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="ui"></div>
+  <div id="loading" class="loading-screen">
+    <div class="spinner">⚽</div>
+    <p>טוען את המועדון...</p>
+  </div>
+  <script>
+    // הסרת מסך טעינה — חסין: דעיכה ואז הסרה מוחלטת מה-DOM
+    function hideLoader() {
+      const l = document.getElementById('loading');
+      if (!l) return;
+      l.classList.add('hidden');
+      setTimeout(() => { if (l && l.parentNode) l.parentNode.removeChild(l); }, 600);
+    }
+    window.hideLoader = hideLoader;   // main.js מסיר כשמסך הפתיחה/כניסה מוכן
+    // גיבוי: גם אם boot נתקע, נסיר אחרי 9 שניות
+    setTimeout(hideLoader, 9000);
+    // Service Worker — עבודה גם בלי אינטרנט
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

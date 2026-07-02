@@ -1,0 +1,385 @@
+/* === החווה של אגם — עיצוב === */
+:root{
+  --sky:#7ec8e3; --grass:#7ec850; --sun:#ffd24a;
+  --petrol:#0a4d57; --teal:#1d8a99; --cream:#fff7e6;
+  --pink:#ff8fb1; --gold:#ffcf4d; --green:#5fbf5f; --red:#ef6b6b;
+  --ink:#0a3540;
+  --shadow:0 10px 30px rgba(10,53,64,.25);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:#a7d8ff;}
+canvas#scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+
+#ui{position:fixed;inset:0;pointer-events:none;z-index:10;}
+#ui button{font-family:'Fredoka','Heebo',sans-serif;cursor:pointer;border:none;}
+.hidden{display:none !important;}
+
+/* ---- מסך טעינה ---- */
+.loading-screen{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;background:linear-gradient(160deg,#7ec8e3,#bfe9c9);
+  color:#fff;transition:opacity .5s;}
+.loading-screen.hidden{opacity:0;pointer-events:none;display:flex !important;}
+.spinner{font-size:80px;animation:bounce 1s infinite;}
+.loading-screen p{font-size:22px;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.2);}
+
+/* ---- מסכים כלליים ---- */
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  pointer-events:auto;z-index:20;}
+.title-screen{background:radial-gradient(circle at 50% 30%,rgba(126,200,227,.25),rgba(10,77,87,.55));
+  backdrop-filter:blur(2px);}
+.title-card{background:linear-gradient(160deg,#fffdf7,#fff2d8);border-radius:34px;padding:38px 42px;
+  text-align:center;box-shadow:var(--shadow);max-width:90vw;border:5px solid #fff;animation:pop .5s;}
+.title-emoji{font-size:84px;animation:bounce 2s infinite;}
+.game-title{font-family:'Fredoka';font-size:48px;color:var(--petrol);margin:6px 0;font-weight:700;}
+.game-sub{font-size:20px;color:var(--teal);margin:0 0 22px;font-weight:700;}
+.credit{font-size:14px;color:#9aa;margin-top:18px;}
+
+.btn-big{font-size:26px;font-weight:700;color:#fff;background:linear-gradient(160deg,#ffb14d,#ff8a3d);
+  padding:16px 34px;border-radius:40px;box-shadow:0 8px 0 #d9722a,0 12px 20px rgba(0,0,0,.2);
+  transition:transform .1s,box-shadow .1s;display:block;margin:0 auto;}
+.btn-big:active{transform:translateY(4px);box-shadow:0 4px 0 #d9722a;}
+.btn-play{background:linear-gradient(160deg,#6fdc8c,#37b86a);box-shadow:0 8px 0 #2a8a4e,0 12px 20px rgba(0,0,0,.2);}
+.btn-play:active{box-shadow:0 4px 0 #2a8a4e;}
+.btn-ghost{margin-top:16px;background:transparent;color:var(--teal);font-size:18px;font-weight:700;
+  padding:8px 16px;border-radius:20px;}
+
+/* ---- HUD ---- */
+.hud{position:fixed;inset:0;pointer-events:none;}
+.topbar{position:absolute;top:0;left:0;right:0;display:flex;gap:10px;padding:12px 14px;
+  align-items:flex-start;}
+.stat{pointer-events:auto;background:rgba(255,255,255,.92);border-radius:22px;padding:8px 16px;
+  display:flex;align-items:center;gap:8px;font-weight:900;font-size:22px;color:var(--ink);
+  box-shadow:var(--shadow);border:3px solid #fff;}
+.stat .ic{font-size:24px;}
+.stat.level{flex-direction:column;align-items:stretch;gap:4px;min-width:120px;}
+.stat.level>span:first-child{display:none;}
+.stat.level{flex-direction:row;}
+.xpbar{height:10px;width:70px;background:#e6e0cf;border-radius:6px;overflow:hidden;}
+.xpfill{height:100%;width:0;background:linear-gradient(90deg,#ffd24a,#ff9d3d);transition:width .4s;}
+.streak{background:linear-gradient(160deg,#ffd0a0,#ff9e6b);color:#7a2e00;}
+.left-tools{margin-right:auto;display:flex;gap:8px;pointer-events:none;}
+.gear{pointer-events:auto;background:rgba(255,255,255,.92);width:48px;height:48px;
+  border-radius:50%;font-size:24px;box-shadow:var(--shadow);border:3px solid #fff;}
+.gear:active{transform:scale(.92);}
+
+.bottombar{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;
+  justify-content:space-between;padding:14px 16px;gap:12px;}
+.tip{pointer-events:none;background:rgba(10,77,87,.82);color:#fff;padding:10px 18px;border-radius:22px;
+  font-size:17px;font-weight:700;box-shadow:var(--shadow);}
+.btn-buy{pointer-events:auto;font-size:20px;font-weight:700;color:#fff;
+  background:linear-gradient(160deg,#7bd0e0,#1d8a99);padding:14px 22px;border-radius:30px;
+  box-shadow:0 6px 0 #126370,0 8px 16px rgba(0,0,0,.2);}
+.btn-buy:active{transform:translateY(3px);box-shadow:0 3px 0 #126370;}
+
+/* ---- שכבות כיסוי / כרטיסים ---- */
+.overlay{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+  background:rgba(10,53,64,.45);pointer-events:auto;padding:16px;animation:fade .2s;}
+.overlay.light{background:rgba(10,53,64,.3);}
+.card{background:linear-gradient(165deg,#fffdf7,#fff1d6);border-radius:30px;padding:22px;
+  width:min(440px,94vw);box-shadow:var(--shadow);border:5px solid #fff;position:relative;animation:pop .25s;}
+.close{position:absolute;top:12px;left:14px;width:44px;height:44px;border-radius:50%;
+  background:#ffe2e2;color:#d34a4a;font-size:20px;font-weight:900;box-shadow:0 3px 8px rgba(0,0,0,.15);
+  z-index:50;pointer-events:auto;}
+.close:active{transform:scale(.9);}
+
+/* כרטיס סוס */
+.card-head{text-align:center;margin-bottom:14px;}
+.big-face{font-size:54px;display:block;animation:bounce 2s infinite;pointer-events:none;}
+.card-head h2{font-family:'Fredoka';font-size:30px;color:var(--petrol);margin:4px 0;}
+.stage-tag{display:inline-block;background:var(--teal);color:#fff;font-weight:700;font-size:14px;
+  padding:4px 14px;border-radius:14px;}
+.bars{margin:8px 4px 16px;}
+.barrow{display:flex;align-items:center;gap:10px;margin:8px 0;}
+.barlbl{width:92px;font-size:15px;font-weight:700;color:var(--ink);}
+.bartrack{flex:1;height:16px;background:#eee4cf;border-radius:10px;overflow:hidden;}
+.barfill{height:100%;border-radius:10px;transition:width .4s;}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.act{background:#fff;border-radius:22px;padding:14px 8px;display:flex;flex-direction:column;
+  align-items:center;gap:6px;box-shadow:0 5px 0 #e7d8b0,0 8px 14px rgba(0,0,0,.1);
+  transition:transform .1s,box-shadow .1s;position:relative;}
+.act:active{transform:translateY(3px);box-shadow:0 2px 0 #e7d8b0;}
+.act-ic{font-size:40px;}
+.act-lbl{font-size:18px;font-weight:700;color:var(--petrol);}
+.act.locked{opacity:.7;filter:grayscale(.4);}
+.lock{font-size:12px;color:#b08;font-weight:700;}
+
+/* ---- חלון תרגיל ---- */
+.math-card{width:min(480px,95vw);}
+.math-top{display:flex;justify-content:space-between;align-items:center;margin:6px 38px 6px 44px;}
+.math-act{background:var(--gold);color:#7a4d00;font-weight:700;font-size:16px;padding:6px 16px;border-radius:16px;}
+.speaker{background:#e8f4ff;width:44px;height:44px;border-radius:50%;font-size:22px;box-shadow:0 3px 8px rgba(0,0,0,.12);}
+.speaker:active{transform:scale(.9);}
+.question{text-align:center;font-family:'Fredoka';font-size:34px;font-weight:700;color:var(--petrol);
+  margin:14px 8px;line-height:1.3;}
+.visual{display:flex;justify-content:center;margin:6px 0 16px;min-height:10px;}
+.emoji-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;max-width:100%;}
+.em{font-size:38px;line-height:1;transition:opacity .3s;}
+.em.gone{opacity:.22;position:relative;}
+.em.gone::after{content:"✖";position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;color:#e04a4a;font-size:30px;font-weight:900;}
+.grp{display:inline-flex;flex-wrap:wrap;gap:4px;padding:6px 10px;background:rgba(255,255,255,.6);border-radius:16px;}
+.opsign{font-size:30px;margin:0 4px;}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 4px;}
+.choice{font-family:'Fredoka';font-size:38px;font-weight:700;color:var(--petrol);background:#fff;
+  border-radius:22px;padding:18px 0;box-shadow:0 6px 0 #e7d8b0,0 8px 14px rgba(0,0,0,.1);
+  transition:transform .08s,box-shadow .08s,background .2s;}
+.choice:active{transform:translateY(3px);box-shadow:0 3px 0 #e7d8b0;}
+.choice.correct{background:linear-gradient(160deg,#8ce99a,#4cc46a);color:#fff;box-shadow:0 6px 0 #2f8a4a;animation:pop .3s;}
+.choice.wrong{background:#ffd9d9;animation:shake .4s;}
+.choice.glow{box-shadow:0 0 0 4px #ffd24a,0 6px 0 #e7d8b0;animation:glowpulse 1s infinite;}
+.hint-btn{display:block;margin:8px auto 0;background:#fff3cf;color:#a07400;font-weight:700;font-size:16px;
+  padding:8px 20px;border-radius:18px;box-shadow:0 3px 8px rgba(0,0,0,.1);}
+.hint-text{text-align:center;margin-top:10px;color:var(--teal);font-weight:700;font-size:17px;
+  background:#eef9ff;padding:8px 14px;border-radius:14px;}
+
+/* ---- הודעות ---- */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);
+  background:rgba(10,77,87,.92);color:#fff;font-weight:700;font-size:18px;padding:12px 24px;
+  border-radius:24px;box-shadow:var(--shadow);z-index:40;opacity:0;transition:opacity .35s,top .35s;pointer-events:none;
+  white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;}
+.toast.show{opacity:1;top:96px;}
+.toast.big{font-size:22px;background:linear-gradient(160deg,#ffb14d,#ff7a3d);top:42%;}
+.toast.big.show{top:40%;}
+
+/* ---- עלייה ברמה ---- */
+.celebrate{background:rgba(10,53,64,.6);}
+.levelup{background:linear-gradient(165deg,#fff7e0,#ffe1a8);border-radius:30px;padding:34px 40px;
+  text-align:center;box-shadow:var(--shadow);border:5px solid #fff;animation:pop .4s;}
+.lu-star{font-size:88px;animation:spin 2s linear infinite;}
+.levelup h2{font-family:'Fredoka';font-size:34px;color:#d9722a;margin:8px 0;}
+.levelup p{font-size:20px;color:var(--petrol);font-weight:700;margin-bottom:18px;}
+
+/* ---- הגדרות ---- */
+.settings-card h2{font-family:'Fredoka';text-align:center;color:var(--petrol);margin:6px 0 18px;}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:10px 6px;
+  border-bottom:2px dashed #eadfc4;font-size:18px;font-weight:700;color:var(--ink);}
+.age-pick{display:flex;gap:8px;}
+.age-pick button{width:46px;height:46px;border-radius:50%;font-size:20px;font-weight:700;
+  background:#fff;color:var(--teal);box-shadow:0 3px 8px rgba(0,0,0,.12);}
+.age-pick button.on{background:var(--teal);color:#fff;transform:scale(1.05);}
+.diff-pick{display:flex;gap:6px;}
+.diff-pick button{padding:8px 14px;border-radius:16px;font-size:15px;font-weight:700;
+  background:#fff;color:var(--teal);box-shadow:0 3px 8px rgba(0,0,0,.12);}
+.diff-pick button.on{background:var(--teal);color:#fff;transform:scale(1.05);}
+.toggle{background:var(--green);color:#fff;font-weight:700;font-size:16px;padding:8px 20px;border-radius:18px;}
+.toggle.off{background:#c9c9c9;}
+.btn-reset{display:block;width:100%;margin-top:18px;background:#ffe2e2;color:#d34a4a;font-weight:700;
+  font-size:17px;padding:12px;border-radius:20px;}
+
+/* ---- חשבון / ענן ---- */
+.auth-block{margin-top:14px;padding-top:12px;border-top:2px dashed #eadfc4;}
+.auth-title{font-weight:700;color:var(--petrol);font-size:17px;margin-bottom:4px;}
+.auth-note{font-size:13px;color:#8a8a7a;margin-bottom:10px;line-height:1.4;}
+.auth-status{font-size:16px;color:var(--petrol);margin-bottom:10px;}
+.auth-in{display:block;width:100%;margin:6px 0;padding:11px 14px;border-radius:14px;border:2px solid #e6dcc2;
+  font-size:16px;font-family:'Heebo',sans-serif;background:#fffdf8;}
+.auth-in:focus{outline:none;border-color:var(--teal);}
+.auth-row{display:flex;gap:10px;margin-top:8px;}
+.auth-btn{flex:1;font-weight:700;font-size:16px;padding:11px;border-radius:16px;color:#fff;}
+.auth-btn.up{background:linear-gradient(160deg,#6fdc8c,#37b86a);box-shadow:0 4px 0 #2a8a4e;}
+.auth-btn.in{background:linear-gradient(160deg,#7bd0e0,#1d8a99);box-shadow:0 4px 0 #126370;}
+.auth-btn.out{width:100%;background:#ffe2e2;color:#d34a4a;}
+.auth-btn:active{transform:translateY(2px);}
+.auth-msg{margin-top:8px;font-size:14px;font-weight:700;min-height:18px;text-align:center;}
+.auth-msg.ok{color:#2a8a4e;}
+.auth-msg.err{color:#d34a4a;}
+
+/* ---- כפתור כיף + תפריט ---- */
+.btn-fun{pointer-events:auto;width:54px;height:54px;border-radius:50%;font-size:26px;
+  background:linear-gradient(160deg,#ffd76a,#ff9e3d);box-shadow:0 5px 0 #d9722a,0 6px 12px rgba(0,0,0,.2);}
+.btn-fun:active{transform:translateY(3px);box-shadow:0 2px 0 #d9722a;}
+.fun-card{width:min(380px,92vw);text-align:center;}
+.fun-card h2{font-family:'Fredoka';color:var(--petrol);margin:6px 0 16px;}
+.fun-opt{display:block;width:100%;margin:10px 0;font-size:20px;font-weight:700;color:#fff;padding:16px;
+  border-radius:20px;background:linear-gradient(160deg,#7bd0e0,#1d8a99);box-shadow:0 5px 0 #126370;}
+.fun-opt:active{transform:translateY(3px);box-shadow:0 2px 0 #126370;}
+
+/* ---- משימות ---- */
+.quests-card{width:min(440px,94vw);}
+.quests-card h2{font-family:'Fredoka';text-align:center;color:var(--petrol);margin:6px 0 14px;}
+.quest{background:#fff;border-radius:18px;padding:12px 14px;margin:10px 0;box-shadow:0 4px 0 #e7d8b0;}
+.quest.done{background:#eafbe9;}
+.quest-top{display:flex;justify-content:space-between;font-weight:700;color:var(--ink);font-size:16px;}
+.qnum{color:var(--teal);}
+.qbar{height:12px;background:#eee4cf;border-radius:8px;overflow:hidden;margin:8px 0 4px;}
+.qfill{height:100%;background:linear-gradient(90deg,#ffd24a,#ff9d3d);border-radius:8px;transition:width .4s;}
+.quest-reward{font-size:13px;color:#a07400;font-weight:700;}
+
+/* ---- גלגל מזל ---- */
+.spin-card{width:min(380px,92vw);text-align:center;}
+.spin-card h2{font-family:'Fredoka';color:var(--petrol);margin:6px 0 14px;}
+.wheel-wrap{display:flex;justify-content:center;margin:10px 0;}
+.wheel{width:140px;height:140px;border-radius:50%;font-size:64px;display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(#ffd24a,#ff9e3d,#6fdc8c,#7bd0e0,#ff8fb1,#ffd24a);box-shadow:0 6px 16px rgba(0,0,0,.2);
+  border:6px solid #fff;}
+.spin-msg{font-size:18px;font-weight:700;color:var(--petrol);margin:12px 0;min-height:24px;}
+@keyframes spinwheel{0%{transform:rotate(0)}100%{transform:rotate(1440deg)}}
+
+/* ---- פס מירוץ ---- */
+.race-bar{position:fixed;top:74px;left:50%;transform:translateX(-50%);width:min(560px,92vw);z-index:35;pointer-events:none;}
+.race-track{direction:ltr;position:relative;height:46px;background:rgba(255,255,255,.92);border-radius:23px;
+  border:3px solid #fff;box-shadow:var(--shadow);}
+.race-horse{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:32px;transition:left .35s ease-out;}
+.race-flag{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:28px;}
+
+/* ---- אנימציות ---- */
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes glowpulse{0%,100%{box-shadow:0 0 0 4px #ffd24a,0 6px 0 #e7d8b0}50%{box-shadow:0 0 0 8px #ffe48a,0 6px 0 #e7d8b0}}
+
+/* ---- חנות ---- */
+.shop-card{width:min(560px,96vw);max-height:90vh;display:flex;flex-direction:column;}
+.shop-title{font-family:'Fredoka';text-align:center;color:var(--petrol);margin:2px 0 4px;}
+.coin-pill{align-self:center;background:var(--gold);color:#7a4d00;font-weight:900;font-size:18px;
+  padding:4px 18px;border-radius:18px;margin-bottom:10px;}
+.shop-tabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+.shop-tab{background:#fff;color:var(--teal);font-weight:700;font-size:15px;padding:8px 12px;border-radius:16px;
+  box-shadow:0 3px 7px rgba(0,0,0,.1);}
+.shop-tab.on{background:var(--teal);color:#fff;}
+.shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;overflow-y:auto;padding:4px;}
+.shop-item{background:#fff;border-radius:18px;padding:10px 6px;display:flex;flex-direction:column;
+  align-items:center;gap:6px;box-shadow:0 4px 0 #e7d8b0,0 6px 12px rgba(0,0,0,.08);}
+.shop-thumb{width:74px;height:74px;display:flex;align-items:center;justify-content:center;position:relative;}
+.shop-thumb img{max-width:100%;max-height:100%;object-fit:contain;}
+.thumb-emoji{position:absolute;font-size:40px;}
+.shop-name{font-size:15px;font-weight:700;color:var(--petrol);text-align:center;line-height:1.1;min-height:32px;
+  display:flex;align-items:center;}
+.buy-btn{background:linear-gradient(160deg,#6fdc8c,#37b86a);color:#fff;font-weight:700;font-size:16px;
+  padding:8px 16px;border-radius:16px;box-shadow:0 4px 0 #2a8a4e;}
+.buy-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #2a8a4e;}
+.buy-btn.cant{background:#cfcfcf;box-shadow:0 4px 0 #a8a8a8;}
+.shop-empty{grid-column:1/-1;text-align:center;font-size:20px;font-weight:700;color:var(--teal);padding:30px;}
+.shop-note{font-size:12px;font-weight:700;color:var(--teal);text-align:center;margin-top:6px;line-height:1.2;}
+
+/* מוכרת + בועת דיבור */
+.shop-keeper{display:flex;align-items:center;gap:10px;margin:2px 0 8px;}
+.shop-keeper img{width:78px;height:78px;object-fit:contain;flex-shrink:0;animation:bob 2.5s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.keeper-bubble{flex:1;background:#fff;border:3px solid var(--gold);border-radius:18px;padding:9px 14px;
+  font-size:15px;font-weight:700;color:var(--petrol);box-shadow:0 3px 8px rgba(0,0,0,.1);min-height:24px;}
+/* מדפי עץ */
+.shop-grid.shelf{background:linear-gradient(180deg,#c89a5e,#b3823f);
+  background-image:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 86px,rgba(90,60,25,.55) 86px,rgba(90,60,25,.55) 94px);
+  border-radius:16px;padding:14px 12px;box-shadow:inset 0 2px 10px rgba(0,0,0,.25);}
+.shop-grid.shelf .shop-item{box-shadow:0 5px 0 #8a5a2b,0 7px 10px rgba(0,0,0,.18);}
+
+/* ---- בורר גידול ---- */
+.crop-card{width:min(440px,94vw);}
+.crop-card h2{font-family:'Fredoka';text-align:center;color:var(--petrol);margin:6px 0 14px;}
+.crop-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-height:60vh;overflow-y:auto;padding:2px;}
+.crop-opt{background:#fff;border-radius:18px;padding:12px 6px;display:flex;flex-direction:column;
+  align-items:center;gap:4px;box-shadow:0 4px 0 #e7d8b0,0 6px 12px rgba(0,0,0,.08);}
+.crop-opt:active{transform:translateY(2px);box-shadow:0 2px 0 #e7d8b0;}
+.crop-opt img{width:60px;height:60px;object-fit:contain;}
+.crop-name{font-size:18px;font-weight:700;color:var(--petrol);}
+.crop-cost{font-size:15px;font-weight:700;color:#a07400;background:#fff3cf;padding:2px 12px;border-radius:12px;}
+.crop-opt.cant,.shop-item .buy-btn.cant{opacity:.7;}
+
+/* ---- הלבשת סוס ---- */
+.dress-btn{display:block;width:100%;margin-top:12px;background:linear-gradient(160deg,#ff9ed0,#ff6fae);color:#fff;
+  font-weight:700;font-size:17px;padding:12px;border-radius:18px;box-shadow:0 4px 0 #cc4f88;}
+.dress-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #cc4f88;}
+.acc-card{width:min(380px,92vw);text-align:center;}
+.acc-card h2{font-family:'Fredoka';color:var(--petrol);margin:6px 0 14px;}
+.acc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.acc-opt{font-size:34px;padding:12px 0;border-radius:16px;background:#fff;box-shadow:0 4px 0 #e7d8b0;}
+.acc-opt.on{background:#fff3cf;box-shadow:0 0 0 3px var(--gold),0 4px 0 #e7d8b0;}
+.acc-opt.none{color:#d34a4a;}
+.acc-opt:active{transform:translateY(2px);}
+
+/* ---- מפת העולם הפתוח ---- */
+.map-card{width:min(440px,94vw);max-height:86vh;overflow-y:auto;}
+.map-card h2{font-family:'Fredoka';text-align:center;color:var(--petrol);margin:6px 0 16px;}
+.map-friends-title{font-family:'Fredoka';text-align:center;color:var(--petrol);font-size:22px;font-weight:700;
+  margin:20px 0 10px;padding-top:14px;border-top:2px dashed #eadfc4;}
+.map-home{display:block;margin:0 auto 12px;}
+.map-farms{display:flex;flex-direction:column;}
+.map-loading{text-align:center;font-size:16px;font-weight:700;color:var(--teal);padding:14px;line-height:1.4;}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.map-area{background:linear-gradient(160deg,#bfe9c9,#8fd6a8);border-radius:22px;padding:18px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 5px 0 #5fa877;}
+.map-area:active{transform:translateY(3px);box-shadow:0 2px 0 #5fa877;}
+.map-area.here{background:linear-gradient(160deg,#ffe6a0,#ffce5e);box-shadow:0 5px 0 #d9a82a;}
+.map-area.locked{filter:grayscale(.6);opacity:.7;}
+.map-emoji{font-size:46px;}
+.map-name{font-size:20px;font-weight:900;color:var(--petrol);}
+.map-tag{font-size:13px;font-weight:700;color:#0a4d57;background:rgba(255,255,255,.6);padding:3px 12px;border-radius:12px;}
+
+/* ---- מחוון מיקום ---- */
+.loc-chip{position:absolute;top:70px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:11;
+  background:rgba(255,255,255,.92);border:3px solid #fff;border-radius:20px;padding:6px 18px;
+  font-weight:900;font-size:17px;color:var(--petrol);box-shadow:var(--shadow);white-space:nowrap;}
+
+/* ---- יומן הרפתקאות ---- */
+.journal-card{width:min(440px,94vw);max-height:88vh;overflow-y:auto;}
+.journal-card h2{font-family:'Fredoka';text-align:center;color:var(--petrol);margin:6px 0 8px;}
+.jprogress{text-align:center;font-weight:700;color:var(--teal);margin-bottom:14px;font-size:15px;}
+.jrow{display:flex;align-items:center;flex-wrap:wrap;gap:8px;background:#fff;border-radius:16px;padding:10px 12px;margin:8px 0;box-shadow:0 3px 0 #e7d8b0;}
+.jrow.unseen{opacity:.6;}
+.jemoji{font-size:30px;}
+.jname{font-weight:700;color:var(--petrol);font-size:16px;flex:1;min-width:80px;}
+.jcount{font-size:13px;color:var(--teal);font-weight:700;}
+.jnext{font-size:12px;color:#a07400;font-weight:700;background:#fff3cf;padding:2px 8px;border-radius:10px;}
+
+@media (max-width:420px){
+  .game-title{font-size:38px;}
+  .question{font-size:28px;}
+  .choice{font-size:32px;}
+  .act-ic{font-size:34px;}
+  .shop-grid{grid-template-columns:repeat(2,1fr);}
+}
+
+/* ---- דוח להורה ---- */
+.btn-report{display:block;width:100%;margin-top:14px;background:#e7f3f5;color:var(--teal);
+  font-weight:700;font-size:17px;border:none;border-radius:16px;padding:12px;cursor:pointer;
+  box-shadow:0 3px 8px rgba(0,0,0,.1);}
+.btn-report:hover{filter:brightness(.97);}
+.report-card .rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 14px;}
+.rchip{background:#fff;border-radius:14px;padding:10px 6px;text-align:center;box-shadow:0 3px 0 #e7d8b0;}
+.rchip b{display:block;font-family:'Fredoka';font-size:24px;color:var(--petrol);line-height:1;}
+.rchip span{font-size:12px;font-weight:700;color:var(--teal);}
+.rtitle{font-weight:700;color:var(--petrol);font-size:16px;margin:4px 2px 8px;}
+.prow{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;
+  padding:8px 10px;margin:7px 0;box-shadow:0 3px 0 #e7d8b0;}
+.prow .pemoji{font-size:22px;}
+.prow .pname{font-weight:700;color:var(--petrol);font-size:14px;width:96px;flex:none;}
+.prow .qbar.prog{flex:1;margin:0;}
+.prow .ppct{font-weight:900;color:var(--ink);font-size:14px;width:40px;text-align:left;}
+.prow .pn{font-size:12px;color:var(--teal);font-weight:700;width:44px;text-align:left;}
+.qfill.good{background:linear-gradient(90deg,#5fbf5f,#8fd98f);}
+.qfill.ok{background:linear-gradient(90deg,#ffd24a,#ff9d3d);}
+.qfill.low{background:linear-gradient(90deg,#ef8a6b,#ef6b6b);}
+.radvice{margin-top:14px;background:#fff6df;border-radius:14px;padding:12px;
+  text-align:center;font-weight:700;color:var(--petrol);font-size:15px;box-shadow:0 3px 0 #e7d8b0;}
+
+/* ---- עולם חברתי: שער כניסה, חברות, ביקור ---- */
+.auth-card{width:min(420px,92vw);}
+.auth-card .auth-in{font-size:18px;padding:13px 16px;margin:8px 0;}
+.auth-tabs{display:flex;gap:8px;margin:4px 0 14px;}
+.auth-tab{flex:1;font-size:17px;font-weight:900;padding:11px;border-radius:18px;color:var(--teal);
+  background:#f2ecd9;box-shadow:inset 0 2px 4px rgba(0,0,0,.06);}
+.auth-tab.on{color:#fff;background:linear-gradient(160deg,#6fdc8c,#37b86a);box-shadow:0 4px 0 #2a8a4e;}
+.auth-card .btn-play{margin-top:10px;width:100%;font-size:22px;}
+.name-card{width:min(360px,92vw);text-align:center;}
+.name-card h2{font-family:'Fredoka';color:var(--petrol);margin:6px 0 8px;}
+.friends-card{width:min(420px,94vw);text-align:center;max-height:80vh;overflow-y:auto;}
+.friends-card h2{font-family:'Fredoka';color:var(--petrol);margin:6px 0 14px;}
+.friend-row{display:flex;align-items:center;gap:10px;width:100%;margin:10px 0;padding:13px 14px;
+  border-radius:20px;background:linear-gradient(160deg,#fff,#fdf3dd);box-shadow:0 4px 0 #e7d8b0;text-align:right;}
+.friend-row:active{transform:translateY(2px);box-shadow:0 2px 0 #e7d8b0;}
+.friend-face{font-size:32px;}
+.friend-name{flex:1;font-size:20px;font-weight:900;color:var(--petrol);}
+.friend-lvl{font-size:14px;font-weight:700;color:#b8860b;}
+.friend-go{font-size:14px;font-weight:900;color:#fff;background:linear-gradient(160deg,#7bd0e0,#1d8a99);
+  padding:7px 14px;border-radius:14px;box-shadow:0 3px 0 #126370;}
+.visit-banner{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:30;
+  display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.95);border:3px solid #fff;
+  border-radius:24px;padding:10px 18px;box-shadow:var(--shadow);font-size:16px;font-weight:700;color:var(--petrol);
+  max-width:94vw;white-space:nowrap;}
+.btn-home{font-size:16px;font-weight:900;color:#fff;padding:9px 16px;border-radius:16px;
+  background:linear-gradient(160deg,#ffb14d,#ff8a3d);box-shadow:0 4px 0 #d9722a;}
+.btn-home:active{transform:translateY(2px);box-shadow:0 2px 0 #d9722a;}
+.hud.visiting .btn-buy,.hud.visiting .btn-fun,.hud.visiting .tip{display:none;}

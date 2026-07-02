@@ -1,0 +1,61 @@
+========================================================
+הנחיה ל-CLAUDE CHROME — יצירת 4 אנתמים ב-SUNO למשחק "מועדון הכדורגל"
+========================================================
+
+המטרה:
+ליצור 4 מנגינות רקע (אנתמים) — אחת לכל מועדון — במנוי ה-Suno המחובר של הלל,
+ולהוריד אותן כקבצי MP3. כל אנתם תפור לרוח/אנרגיה של הקבוצה, אבל מקורי לחלוטין
+(לא חיקוי של האנתם האמיתי — המשחק יהיה ציבורי, אז חייב להיות שיר מקורי).
+
+הערה: להשאיר את המנגינות אינסטרומנטליות (בלי מילים) כדי שיתאימו כרקע ללולאה.
+
+--------------------------------------------------------
+צעדים (בצע לפי הסדר, מועדון-מועדון):
+--------------------------------------------------------
+1. פתח את https://suno.com/create  וודא שאתה מחובר (אם לא — עצור ודווח).
+2. עבור למצב "Custom".
+3. לכל אחד מ-4 המועדונים למטה:
+   א. הפעל את המתג "Instrumental" (בלי מילים).
+   ב. בשדה "Style" הדבק את טקסט ה-Style של אותו מועדון (מהרשימה למטה).
+   ג. בשדה "Title" כתוב את שם הקובץ שמופיע ("anthem_...").
+   ד. לחץ "Create" והמתן שהשיר יסתיים להיווצר (~1-2 דקות).
+   ה. הורד את הגרסה שיצאה טוב יותר כ-MP3 (Download > MP3 Audio).
+   ו. עבור למועדון הבא וחזור על א-ה.
+
+--------------------------------------------------------
+4 ה-STYLES (העתק-הדבק כמו שהם):
+--------------------------------------------------------
+[1] anthem_beitar  (בית"ר ירושלים — צהוב-שחור)
+Style: Original football stadium terrace anthem, passionate and intense, minor key,
+Middle-Eastern Mizrahi flavor, driving darbuka and bass drums, bold brass, chanting
+crowd energy, proud and fierce, looping, NOT based on any existing song.
+
+[2] anthem_maccabi_haifa  (מכבי חיפה — ירוק-לבן)
+Style: Original football stadium victory anthem, bright and triumphant, major key,
+Mediterranean uplifting brass and marching drums, celebratory and joyful, big crowd
+singing energy, looping, NOT based on any existing song.
+
+[3] anthem_maccabi_tlv  (מכבי תל אביב — צהוב-כחול)
+Style: Original football stadium anthem, proud classic and regal, stately orchestral
+strings with terrace drums, confident and majestic, timeless champion feel, looping,
+NOT based on any existing song.
+
+[4] anthem_hapoel_bs  (הפועל באר שבע — אדום-לבן)
+Style: Original football stadium anthem, energetic upbeat southern march, fast tempo,
+percussion-driven, hand-claps and brass, fun and fiery desert-town fan chant vibe,
+looping, NOT based on any existing song.
+
+--------------------------------------------------------
+מה לא לגעת:
+--------------------------------------------------------
+- אל תשנה הגדרות חשבון/מנוי.
+- אל תמחק שירים קיימים בספרייה.
+- רק ליצור 4 שירים חדשים ולהוריד אותם.
+
+--------------------------------------------------------
+מה לדווח בחזרה (הדבק להלל את זה):
+--------------------------------------------------------
+- לכל אחד מ-4 המועדונים: האם נוצר בהצלחה (כן/לא), ושם קובץ ה-MP3 שהורד.
+- לאיזו תיקייה ירדו הקבצים (בדרך כלל Downloads).
+- אם משהו נכשל — מה בדיוק (טקסט השגיאה / איפה נתקע).
+========================================================
